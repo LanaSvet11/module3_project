@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const path = require("path");
 const UserModel = require("./models/UserModel");
+const helmet = require("helmet");
+const morgan = require("morgan");
 
 const app = express();
 app.use(express.json());
@@ -17,7 +19,21 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(morgan("dev"));
+app.use(helmet());
+// END MIDDLEWARE //
+
+// START ROUTES //
+
+app.use(express.static(path.join(__dirname, "../client/dist")));
 app.use(cookieParser());
+app.use((req, res, next) => {
+  if (req.path.startsWith("/server")) {
+    req.url = req.url.replace("/server", ""); // strip /server from the path
+  }
+  next();
+});
 
 mongoose.connect(
   "mongodb+srv://svgolovatenko:efX2dsE8YSK2REyf@cluster0.kblhcwc.mongodb.net/User?retryWrites=true&w=majority"
